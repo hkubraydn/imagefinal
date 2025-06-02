@@ -144,7 +144,7 @@ def print_system_info():
         print(f"OpenCV version: {cv2.__version__}")
     except ImportError:
         print("OpenCV not found")
-    
+
     
     try:
         import numpy as np
