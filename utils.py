@@ -3,15 +3,18 @@ Utility functions for the face recognition system.
 Contains helper functions for data storage, user input, and file operations.
 """
 
-import pickle
+import json
 import os
 import sys
 from threading import Thread
 import time
+import base64
+import cv2
+import numpy as np
 
 def save_face_data(data, filename):
     """
-    Save face data to a pickle file.
+    Save face data to a JSON file.
     
     Args:
         data (dict): Dictionary containing face encodings and names
@@ -23,18 +26,18 @@ def save_face_data(data, filename):
         if directory and not os.path.exists(directory):
             os.makedirs(directory)
         
-        # Save data to pickle file
-        with open(filename, 'wb') as f:
-            pickle.dump(data, f)
+        # Save data to JSON file
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
         
-        print(f"Face data saved to {filename}")
+        print(f"Yüz verileri {filename} dosyasına kaydedildi")
         
     except Exception as e:
-        raise Exception(f"Error saving face data: {str(e)}")
+        raise Exception(f"Yüz verisi kaydetme hatası: {str(e)}")
 
 def load_face_data(filename):
     """
-    Load face data from a pickle file.
+    Load face data from a JSON file.
     
     Args:
         filename (str): Path to the file containing face data
@@ -44,51 +47,38 @@ def load_face_data(filename):
     """
     try:
         if not os.path.exists(filename):
-            print(f"Face data file {filename} not found. Starting with empty database.")
+            print(f"Yüz verisi dosyası {filename} bulunamadı. Boş veritabanı ile başlanıyor.")
             return None
         
-        with open(filename, 'rb') as f:
-            data = pickle.load(f)
+        with open(filename, 'r', encoding='utf-8') as f:
+            data = json.load(f)
         
         # Validate data structure
-        if not isinstance(data, dict) or 'encodings' not in data or 'names' not in data:
-            print("Invalid face data format. Starting with empty database.")
-            return None
-        
-        if len(data['encodings']) != len(data['names']):
-            print("Inconsistent face data. Starting with empty database.")
+        if not isinstance(data, dict) or 'faces' not in data:
+            print("Geçersiz yüz verisi formatı. Boş veritabanı ile başlanıyor.")
             return None
         
         return data
         
     except Exception as e:
-        print(f"Error loading face data: {str(e)}")
+        print(f"Yüz verisi yükleme hatası: {str(e)}")
         return None
 
 def get_user_input(prompt):
     """
-    Get user input with a prompt.
-    This function handles input in a way that works with the OpenCV window system.
+    Get input from user with proper encoding handling.
     
     Args:
         prompt (str): The prompt to display to the user
         
     Returns:
-        str: The user's input
+        str: User input
     """
-    print(f"\n{prompt}")
-    print("(Enter your response in the terminal)")
-    
     try:
-        # Use input() for getting user input
-        user_input = input(">>> ").strip()
-        return user_input
-    except KeyboardInterrupt:
-        print("\nInput cancelled.")
-        return ""
-    except Exception as e:
-        print(f"Error getting user input: {str(e)}")
-        return ""
+        return input(prompt).strip()
+    except UnicodeDecodeError:
+        # Handle encoding issues
+        return input(prompt.encode('utf-8').decode(sys.stdin.encoding)).strip()
 
 def validate_name(name):
     """

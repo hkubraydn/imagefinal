@@ -3,9 +3,9 @@ Real-time Face Recognition System
 Main entry point for the face recognition application.
 """
 
-import sys
+
 import cv2
-from face_recognition_system import FaceRecognitionSystem
+from real_time_face_recognition_system import RealTimeFaceRecognition
 
 def main():
     """Main function to run the face recognition system."""
@@ -18,7 +18,7 @@ def main():
     
     try:
         # Initialize the face recognition system
-        face_system = FaceRecognitionSystem()
+        face_system = RealTimeFaceRecognition()
         
         # Start the real-time recognition
         face_system.run_real_time_recognition()
